@@ -1,0 +1,7 @@
+config:
+  jvmArgs: >-
+    -server -Xms5120m -Xmx5120m -XX:+PrintGCDetails -XX:+PrintGCDateStamps
+    -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8124
+    -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false
+    -Dkotlinx.coroutines.io.parallelism=1024
+  mainClass: service.ServiceApplication
