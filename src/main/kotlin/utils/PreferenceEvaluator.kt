@@ -1,14 +1,7 @@
 package utils
 
-import dtos.PreferenceCheckDTO
-import dtos.toAvailabilityPreferenceValue
-import dtos.toSlotDurationPreferenceValue
-import dtos.toUnavailabilityPreferenceValue
-import models.AvailabilityPreference
-import models.HolidayPreference
-import models.Preference
-import models.PreferenceCardinality
-import models.SlotDurationPreference
+import dtos.*
+import models.*
 
 object PreferenceEvaluator {
 
@@ -22,6 +15,7 @@ object PreferenceEvaluator {
             when (preference) {
                 is AvailabilityPreference -> preference.matches(target.toAvailabilityPreferenceValue())
                 is SlotDurationPreference -> preference.matches(target.toSlotDurationPreferenceValue())
+                is SlotAdvancePreference -> preference.matches(target.toSlotAdvancePreferenceValue())
                 else -> false
             }
         }.all { it }

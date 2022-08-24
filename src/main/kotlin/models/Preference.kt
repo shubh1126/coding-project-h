@@ -3,6 +3,7 @@ package models
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import utils.Helper
 
 
 enum class PreferenceVersion {
@@ -65,6 +66,7 @@ data class UnavailabilityItem(
 }
 
 interface Preference {
+    val preferenceId : String
     val preferenceType: PreferenceType
     val version: PreferenceVersion
     val starAt: Long
@@ -73,6 +75,8 @@ interface Preference {
     val value: PreferenceCandidateValue
     val cardinality: PreferenceCardinality
     fun matches(target: PreferenceCandidateValue): Boolean
+    fun isActive() : Boolean = status == PreferenceStatus.ACTIVE &&
+            expireAt?.let {Helper.currentDateTime() < it} == true
 }
 
 @JsonTypeInfo(
@@ -84,23 +88,25 @@ interface Preference {
     JsonSubTypes.Type(value = SlotDurationPreference::class, name = "slot-pref"),
     JsonSubTypes.Type(value = AvailabilityPreference::class, name = "avail-pref"),
     JsonSubTypes.Type(value = HolidayPreference::class, name = "holiday-pref"),
+    JsonSubTypes.Type(value = HolidayPreference::class, name = "slot-adv-pref"),
 )
 sealed class UserPreference(
     open val user: User,
-    override val preferenceType: PreferenceType = PreferenceType.USER
+    override val preferenceType: PreferenceType = PreferenceType.USER,
+    override val preferenceId: String = Helper.generateUuid("PREF")
 ) : Preference
 
 
 @JsonTypeName("slot-pref")
 data class SlotDurationPreference(
-    val duration: Long,
+    val durationInMilliseconds: Long,
     override val starAt: Long,
     override val user: User,
     override val status: PreferenceStatus = PreferenceStatus.ACTIVE,
     override val expireAt: Long? = null
 ) : UserPreference(user) {
     override val cardinality: PreferenceCardinality = PreferenceCardinality.ALLOW
-    override val value: SingleCandidateItem<Long> = SingleCandidateItem(duration)
+    override val value: SingleCandidateItem<Long> = SingleCandidateItem(durationInMilliseconds)
     override val version: PreferenceVersion = PreferenceVersion.V1
 
     override fun matches(target: PreferenceCandidateValue): Boolean =
@@ -138,8 +144,13 @@ data class HolidayPreference(
     override val starAt: Long,
     override val user: User,
     override val status: PreferenceStatus = PreferenceStatus.ACTIVE,
-    override val expireAt: Long? = null,
+    override val expireAt: Long,
 ) : UserPreference(user) {
+    init {
+        require(expireAt > starAt){
+            "End of holiday should be greater than start"
+        }
+    }
     override val cardinality: PreferenceCardinality = PreferenceCardinality.DENY
     override val version: PreferenceVersion = PreferenceVersion.V1
     override val value: SingleCandidateItem<UnavailabilityItem> = SingleCandidateItem(unavailabilityDays)
@@ -148,5 +159,25 @@ data class HolidayPreference(
             require(target is SingleCandidateItem<*>)
             val targetValue = (target as SingleCandidateItem<UnavailabilityItem>).value
             unavailabilityDays.match(targetValue)
+        }
+}
+
+
+@JsonTypeName("slot-adv-pref")
+data class SlotAdvancePreference(
+    val durationInMinutes: Long,
+    override val starAt: Long,
+    override val user: User,
+    override val status: PreferenceStatus = PreferenceStatus.ACTIVE,
+    override val expireAt: Long? = null,
+) : UserPreference(user) {
+    override val cardinality: PreferenceCardinality = PreferenceCardinality.ALLOW
+    override val version: PreferenceVersion = PreferenceVersion.V1
+    override val value: SingleCandidateItem<Long> = SingleCandidateItem(durationInMinutes)
+    override fun matches(target: PreferenceCandidateValue): Boolean =
+        target.let {
+            require(target is SingleCandidateItem<*>)
+            val targetValue = (target as SingleCandidateItem<Long>).value
+            Helper.getCurrentDateTimeBeforeNMinutes(durationInMinutes) >= targetValue
         }
 }

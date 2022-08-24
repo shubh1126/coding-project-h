@@ -20,3 +20,6 @@ fun PreferenceCheckDTO.toAvailabilityPreferenceValue() : PreferenceCandidateValu
 fun PreferenceCheckDTO.toUnavailabilityPreferenceValue() : PreferenceCandidateValue =
     SingleCandidateItem(UnavailabilityItem(startAt, endAt))
 
+fun PreferenceCheckDTO.toSlotAdvancePreferenceValue() : PreferenceCandidateValue =
+    SingleCandidateItem(startAt)
+
