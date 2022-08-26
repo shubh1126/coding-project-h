@@ -1,6 +1,7 @@
 package utils
 
 import dtos.*
+import dtos.internal.*
 import models.*
 
 object PreferenceEvaluator {

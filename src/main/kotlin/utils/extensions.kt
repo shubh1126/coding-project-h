@@ -7,6 +7,7 @@ import io.dropwizard.jersey.setup.JerseyEnvironment
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.util.concurrent.TimeUnit
 import javax.ws.rs.WebApplicationException
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
@@ -19,6 +20,7 @@ fun JerseyEnvironment.registerCommonExceptionMappers() {
     this.register(InitialisationIllegalArgumentExceptionMapper())
 }
 
+fun Long.milliSecondsToMinutes() : Long = TimeUnit.MILLISECONDS.toMinutes(this)
 
 private class IllegalArgumentExceptionMapper : LoggingExceptionMapper<IllegalArgumentException>() {
     override fun toResponse(exception: IllegalArgumentException): Response {

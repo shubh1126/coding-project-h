@@ -1,4 +1,4 @@
-package dtos
+package dtos.internal
 
 import models.AvailabilityItem
 import models.PreferenceCandidateValue

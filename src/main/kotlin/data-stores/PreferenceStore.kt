@@ -9,13 +9,13 @@ class PreferenceStore {
     private val preferences: MutableMap<String, MutableList<Preference>> = mutableMapOf()
 
 
-    @Synchronized fun addPreference(preference: Preference) {
+    @Synchronized fun addPreference(preference: Preference): Preference =
         when (preference) {
             is UserPreference -> addPreference(preference)
-            else -> NotImplementedError("Not yet implemented")
+            else -> throw NotImplementedError("Not yet implemented")
         }
 
-    }
+
 
     @Synchronized
     fun updateUserPreference(oldPreference: UserPreference, newPreference: UserPreference) {
@@ -34,7 +34,7 @@ class PreferenceStore {
     }
 
 
-    private fun addPreference(preference: UserPreference) {
+    private fun addPreference(preference: UserPreference) : Preference{
         val userPreferences = preferences.computeIfAbsent(
             preference.user.id
         ) {
@@ -43,33 +43,31 @@ class PreferenceStore {
 
         // this can be moved away when we connect db
         // as json sub type will add the type info which can be used to query upon
-        when (preference) {
-            is SlotDurationPreference -> userPreferences.add(
+        val preference = when (preference) {
+            is SlotDurationPreference ->
                 addSlotDurationPreference(
                     userPreferences
                         .filterIsInstance<SlotDurationPreference>()
                         .filter { it.isActive() }, preference
-                )
             )
-            is AvailabilityPreference -> userPreferences.add(
+            is AvailabilityPreference ->
                 addAvailabilityPreference(userPreferences
                     .filterIsInstance<AvailabilityPreference>()
                     .filter { it.isActive() }, preference
-                )
             )
-            is HolidayPreference -> userPreferences.add(
+            is HolidayPreference ->
                 addHolidayPreference(
                     userPreferences
                         .filterIsInstance<HolidayPreference>(), preference
-                )
             )
-            is SlotAdvancePreference -> userPreferences.add(
+            is SlotAdvancePreference ->
                 addSlotAdvancePreference(
                     userPreferences
                         .filterIsInstance<SlotAdvancePreference>()
                         .filter { it.isActive() }, preference)
-            )
         }
+
+        return preference.also { userPreferences.add(it) }
 
     }
 
