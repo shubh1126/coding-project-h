@@ -22,4 +22,13 @@ class UserStore {
         users.firstOrNull { it.id == id }
             ?: throw NotFoundException("User is not present in the system")
 
+    fun updateUser(oldUser: User, newUser: User) {
+        require(users.contains(oldUser)) {
+            "Requested user is not present in the system"
+        }
+        users.also {
+            it.remove(oldUser)
+            it.add(newUser)
+        }
+    }
 }

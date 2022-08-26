@@ -1,9 +1,10 @@
 package service.resources
 
-import `data-stores`.UserStore
+import dtos.UpdateUserDto
 import dtos.UserDto
+import dtos.UserResponseDto
+import managers.UserManager
 import javax.inject.Inject
-import javax.inject.Named
 import javax.ws.rs.*
 import javax.ws.rs.container.AsyncResponse
 import javax.ws.rs.container.Suspended
@@ -11,16 +12,37 @@ import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
 @Path("user")
-class UserResource @Inject constructor(  @Named("userDB") private val userDB : UserStore) : ResourceScope() {
+class UserResource @Inject constructor(
+    private val manager: UserManager
+) : ResourceScope() {
 
-    @Path("test")
+    @Path("{userEmail}")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    fun checkPromotionForListing(
+    fun getUserByEmail(
+        @PathParam("userEmail") userEmail: String,
         @Suspended asyncResponse: AsyncResponse
     ) = withAsyncResponse(asyncResponse) {
-        Response.ok("hello").build()
+
+        manager.getUser(userEmail).let { user ->
+            Response.ok(UserResponseDto.fromUser(user)).build()
+        }
+
+    }
+
+    @Path("{userId: USR.*}")
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun getUserById(
+        @PathParam("userId") userId: String,
+        @Suspended asyncResponse: AsyncResponse
+    ) = withAsyncResponse(asyncResponse) {
+        manager.getUserById(userId).let { user ->
+            Response.ok(UserResponseDto.fromUser(user)).build()
+        }
+
     }
 
     @Path("")
@@ -28,10 +50,27 @@ class UserResource @Inject constructor(  @Named("userDB") private val userDB : U
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun addUser(
-        userRequest : UserDto,
+        userRequest: UserDto,
         @Suspended asyncResponse: AsyncResponse
     ) = withAsyncResponse(asyncResponse) {
-        userDB.addUser(userRequest.toUser())
-        Response.ok("hello").build()
+        manager.addUser(userRequest)
+            .let { user ->
+                Response.ok(UserResponseDto.fromUser(user)).build()
+            }
+    }
+
+    @Path("{userId: USR.*}")
+    @PATCH
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun addUser(
+        userRequest: UpdateUserDto,
+        @PathParam("userId") userId: String,
+        @Suspended asyncResponse: AsyncResponse
+    ) = withAsyncResponse(asyncResponse) {
+        manager.updateUser(userId, userRequest)
+        Response
+            .status(204)
+            .build()
     }
 }
