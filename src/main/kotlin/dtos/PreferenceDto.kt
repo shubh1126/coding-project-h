@@ -23,7 +23,13 @@ data class PreferenceDto(
                 availabilitySchedule
             ).isNotEmpty()
         ) {
-            "At-least one preference needs to be define"
+            "At-least one preference needs to be defined"
+        }
+
+        slotAdvanceDurationInMilliSeconds?.also {
+            require(it.milliSecondsToMinutes() >=1){
+                "Slot advance duration should be a multiple of 1 minute"
+            }
         }
 
         slotDurationInMilliSeconds?.also {

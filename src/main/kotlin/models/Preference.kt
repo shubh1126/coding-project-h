@@ -66,7 +66,7 @@ data class UnavailabilityItem(
 }
 
 interface Preference {
-    val preferenceId : String
+    val preferenceId: String
     val preferenceType: PreferenceType
     val version: PreferenceVersion
     val starAt: Long
@@ -75,8 +75,8 @@ interface Preference {
     val value: PreferenceCandidateValue
     val cardinality: PreferenceCardinality
     fun matches(target: PreferenceCandidateValue): Boolean
-    fun isActive() : Boolean = status == PreferenceStatus.ACTIVE &&
-            expireAt?.let {Helper.currentDateTime() < it} == true
+    fun isActive(): Boolean = status == PreferenceStatus.ACTIVE &&
+            expireAt?.let { Helper.currentDateTime() < it } ?: true
 }
 
 @JsonTypeInfo(
@@ -135,7 +135,8 @@ data class AvailabilityPreference(
                 it.match(targetValue)
             }
         }
-    companion object{}
+
+    companion object {}
 }
 
 
@@ -148,10 +149,11 @@ data class HolidayPreference(
     override val expireAt: Long,
 ) : UserPreference(user) {
     init {
-        require(expireAt > starAt){
+        require(expireAt > starAt) {
             "End of holiday should be greater than start"
         }
     }
+
     override val cardinality: PreferenceCardinality = PreferenceCardinality.DENY
     override val version: PreferenceVersion = PreferenceVersion.V1
     override val value: SingleCandidateItem<UnavailabilityItem> = SingleCandidateItem(unavailabilityDays)
