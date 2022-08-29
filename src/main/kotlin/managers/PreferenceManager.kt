@@ -5,13 +5,11 @@ import dtos.AvailabilityItemDTO
 import dtos.PreferenceDto
 import dtos.PreferenceResponseDto
 import dtos.UpdateUserDto
-import models.AvailabilityPreference
-import models.SlotAdvancePreference
-import models.SlotDurationPreference
-import models.User
+import models.*
 import utils.Helper
 import utils.logger
 import utils.minutesToMilliSeconds
+import java.lang.IllegalArgumentException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
@@ -46,6 +44,18 @@ class PreferenceManager @Inject constructor(
         return preferenceDto
     }
 
+    suspend fun getuserSlotDurationTime(userId: String): Long? =
+        prefDB
+            .getPreferences(userId)
+            .filterIsInstance<SlotDurationPreference>()
+            .firstOrNull()?.durationInMilliseconds
+
+
+    suspend fun getUserPreferencesRaw(
+        userId: String
+    ): List<Preference> =
+        prefDB.getPreferences(userId)
+            .filter { it.isActive() }
 
     suspend fun getUserPreference(
         userId: String

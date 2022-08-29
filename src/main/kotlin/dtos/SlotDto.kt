@@ -36,4 +36,7 @@ data class SlotDto(
             guests = guests
         )
 
+    fun isValidDuration(duration: Long) : Boolean =
+        endTime.minus(startTime) == duration
+
 }
