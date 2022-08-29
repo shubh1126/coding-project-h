@@ -32,7 +32,7 @@ data class AvailabilityItemDTO(
             throw IllegalArgumentException("Please provide valid start or end time")
         }
 
-        require(dayIndex in 0..6) {
+        require(dayIndex in 1..7) {
             "Please provide a valid day"
         }
 

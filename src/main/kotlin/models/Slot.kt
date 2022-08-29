@@ -61,7 +61,7 @@ data class Slot(
                 abs(slotToBook.startTime - this.startTime) > slotToBook.duration
             this.startTime < slotToBook.startTime ->
                 abs(slotToBook.startTime - this.startTime) > this.duration
-            else -> false
+            else -> true
         }
 
 }

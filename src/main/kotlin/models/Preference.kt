@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import utils.Helper
+import utils.getHHMMTime
 
 
 enum class PreferenceVersion {
@@ -51,7 +52,7 @@ data class AvailabilityItem(
 ) {
     fun match(target: AvailabilityItem): Boolean =
         dayIndex == target.dayIndex && target.let {
-            startTime <= it.startTime && endTime >= it.endTime
+            startTime <= it.startTime.getHHMMTime() && endTime >= it.endTime.getHHMMTime()
         }
 }
 
@@ -181,6 +182,6 @@ data class SlotAdvancePreference(
         target.let {
             require(target is SingleCandidateItem<*>)
             val targetValue = (target as SingleCandidateItem<Long>).value
-            Helper.getCurrentDateTimeBeforeNMinutes(durationInMinutes) >= targetValue
+            Helper.getCurrentDateTimeBeforeNMinutes(durationInMinutes) <= targetValue
         }
 }

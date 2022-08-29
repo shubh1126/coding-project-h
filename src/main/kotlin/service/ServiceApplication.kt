@@ -9,6 +9,7 @@ import io.dropwizard.jersey.setup.JerseyEnvironment
 import io.dropwizard.setup.Environment
 import service.resources.UserPreferenceResource
 import service.resources.UserResource
+import service.resources.UserSlotResource
 import utils.registerCommonExceptionMappers
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
@@ -26,6 +27,7 @@ class ServiceApplication : BaseServiceApplication() {
         //register controllers here
         register(getInstance(UserResource::class.java))
         register(getInstance(UserPreferenceResource::class.java))
+        register(getInstance(UserSlotResource::class.java))
 
     }
 

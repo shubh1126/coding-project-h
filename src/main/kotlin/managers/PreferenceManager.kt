@@ -63,6 +63,7 @@ class PreferenceManager @Inject constructor(
 
         val preferences = prefDB
             .getPreferences(userId)
+            .filter { it.isActive() }
 
         val availabilitySchedule = preferences
             .filterIsInstance<AvailabilityPreference>()

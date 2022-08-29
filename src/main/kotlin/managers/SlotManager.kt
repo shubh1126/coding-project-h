@@ -3,6 +3,7 @@ package managers
 import `data-stores`.SlotStore
 import dtos.SlotDto
 import dtos.internal.PreferenceCheckDTO
+import models.Slot
 import utils.PreferenceEvaluator
 import utils.logger
 import java.lang.IllegalArgumentException
@@ -10,7 +11,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class SlotManager @Inject constructor(
-    @Named("prefDB") private val slotDB: SlotStore,
+    @Named("slotDB") private val slotDB: SlotStore,
     private val userManager: UserManager,
     private val prefManager: PreferenceManager
 ) {
@@ -32,10 +33,21 @@ class SlotManager @Inject constructor(
                 endAt = slotDto.endTime
             )
         )
-
         slotDB.addSlot(slotDto, user)
+
         //slotDto.checkSlotDurationPreference(userId)
 
+    }
+
+    suspend fun getSlots(
+        userId: String,
+        startTime: Long,
+        endTime: Long
+    ): List<Slot> {
+        val user = userManager.getUserById(userId)
+        return slotDB.getSlotForUser(
+            user, startTime, endTime
+        )
     }
 
 
