@@ -21,6 +21,8 @@ fun JerseyEnvironment.registerCommonExceptionMappers() {
 }
 
 fun Long.milliSecondsToMinutes() : Long = TimeUnit.MILLISECONDS.toMinutes(this)
+fun Long.minutesToMilliSeconds() : Long = TimeUnit.MINUTES.toMillis(this)
+
 
 private class IllegalArgumentExceptionMapper : LoggingExceptionMapper<IllegalArgumentException>() {
     override fun toResponse(exception: IllegalArgumentException): Response {

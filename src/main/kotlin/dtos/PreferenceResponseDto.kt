@@ -5,12 +5,10 @@ import models.AvailabilityItem
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PreferenceResponseDto(
-    val slotDurationInMillis: Long,
-    val slotAdvanceDurationInMillis: Long,
+    val slotDurationInMillis: Long? = null,
+    val slotAdvanceDurationInMillis: Long? = null,
     // allowing null so that its optional
     // empty can be considered as not available
-    val availabilitySchedule: Set<AvailabilityItem>,
-    val createdAt: Long,
-    val updatedAt: Long
-
+    val availabilitySchedule: Set<AvailabilityItemDTO> = emptySet(),
+    val updatedAt: Long?= null
 )

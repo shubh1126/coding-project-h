@@ -7,6 +7,7 @@ import io.dropwizard.jersey.errors.LoggingExceptionMapper
 import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper
 import io.dropwizard.jersey.setup.JerseyEnvironment
 import io.dropwizard.setup.Environment
+import service.resources.UserPreferenceResource
 import service.resources.UserResource
 import utils.registerCommonExceptionMappers
 import javax.ws.rs.core.MediaType
@@ -24,6 +25,8 @@ class ServiceApplication : BaseServiceApplication() {
     private fun JerseyEnvironment.registerResources(){
         //register controllers here
         register(getInstance(UserResource::class.java))
+        register(getInstance(UserPreferenceResource::class.java))
+
     }
 
     /**

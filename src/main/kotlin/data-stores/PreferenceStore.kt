@@ -3,18 +3,22 @@ package `data-stores`
 import models.*
 import utils.Helper
 import kotlin.reflect.KClass
+import kotlin.reflect.jvm.internal.impl.load.java.structure.JavaClass
 
 class PreferenceStore {
 
     private val preferences: MutableMap<String, MutableList<Preference>> = mutableMapOf()
 
 
-    @Synchronized fun addPreference(preference: Preference): Preference =
+    @Synchronized
+    fun addPreference(preference: Preference): Preference =
         when (preference) {
             is UserPreference -> addPreference(preference)
             else -> throw NotImplementedError("Not yet implemented")
         }
 
+    fun getPreferences(userId: String): List<Preference> = preferences
+        .getOrDefault(userId, mutableListOf()).toList()
 
 
     @Synchronized
@@ -27,14 +31,14 @@ class PreferenceStore {
 
     }
 
-    fun <T:UserPreference>getUserPreferences( userId: String){
-        preferences.getOrDefault(
-            userId, mutableListOf()
-        ).filterIsInstance<KClass<T>>()
-    }
+    fun < T : UserPreference> getUserPreferences(
+        userId: String,
+        t : JavaClass,
+    ): List<Preference> =
+        getPreferences(userId).filter{ it.javaClass == t}
 
 
-    private fun addPreference(preference: UserPreference) : Preference{
+    private fun addPreference(preference: UserPreference): Preference {
         val userPreferences = preferences.computeIfAbsent(
             preference.user.id
         ) {
@@ -49,22 +53,24 @@ class PreferenceStore {
                     userPreferences
                         .filterIsInstance<SlotDurationPreference>()
                         .filter { it.isActive() }, preference
-            )
+                )
             is AvailabilityPreference ->
-                addAvailabilityPreference(userPreferences
-                    .filterIsInstance<AvailabilityPreference>()
-                    .filter { it.isActive() }, preference
-            )
+                addAvailabilityPreference(
+                    userPreferences
+                        .filterIsInstance<AvailabilityPreference>()
+                        .filter { it.isActive() }, preference
+                )
             is HolidayPreference ->
                 addHolidayPreference(
                     userPreferences
                         .filterIsInstance<HolidayPreference>(), preference
-            )
+                )
             is SlotAdvancePreference ->
                 addSlotAdvancePreference(
                     userPreferences
                         .filterIsInstance<SlotAdvancePreference>()
-                        .filter { it.isActive() }, preference)
+                        .filter { it.isActive() }, preference
+                )
         }
 
         return preference.also { userPreferences.add(it) }

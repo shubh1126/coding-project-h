@@ -135,6 +135,7 @@ data class AvailabilityPreference(
                 it.match(targetValue)
             }
         }
+    companion object{}
 }
 
 

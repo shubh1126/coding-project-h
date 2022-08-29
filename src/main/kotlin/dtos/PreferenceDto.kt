@@ -8,23 +8,43 @@ import utils.milliSecondsToMinutes
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PreferenceDto(
-    val slotDuration: Long? = null,
-    val slotAdvanceDuration: Long? = null,
+    val slotDurationInMilliSeconds: Long? = null,
+    val slotAdvanceDurationInMilliSeconds: Long? = null,
     // allowing null so that its optional
     // empty can be considered as not available
-    val availabilitySchedule: Set<AvailabilityItem>? = null
+    val availabilitySchedule: Set<AvailabilityItemDTO>? = null
 ) {
 
     init {
-        require(listOfNotNull(slotDuration, slotAdvanceDuration, availabilitySchedule).isNotEmpty()) {
-            "Atleast one preference needs to be define"
+        require(
+            listOfNotNull(
+                slotDurationInMilliSeconds,
+                slotAdvanceDurationInMilliSeconds,
+                availabilitySchedule
+            ).isNotEmpty()
+        ) {
+            "At-least one preference needs to be define"
+        }
+
+        slotDurationInMilliSeconds?.also {
+            val duration = it.milliSecondsToMinutes()
+            require(duration % 15 == 0L) {
+                "Duration should be in multiple of 15 minutes"
+            }
+
+            require(duration <= 120) {
+                "Duration of a slot cannot be greater than 2 hours"
+            }
+
+            // Note: can add check to ensure schedule has a slot duration
+
         }
     }
 
     fun getAvailabilityPreference(user: User): AvailabilityPreference? =
         availabilitySchedule?.let {
             AvailabilityPreference(
-                availabilityDays = it,
+                availabilityDays = it.map { av -> av.toAvailabilityItem() }.toSet(),
                 starAt = Helper.currentDateTime(),
                 user = user
             )
@@ -32,7 +52,7 @@ data class PreferenceDto(
 
 
     fun getSlotDurationPreference(user: User): SlotDurationPreference? =
-        slotDuration?.let {
+        slotDurationInMilliSeconds?.let {
             SlotDurationPreference(
                 durationInMilliseconds = it,
                 starAt = Helper.currentDateTime(),
@@ -43,7 +63,7 @@ data class PreferenceDto(
 
     @JsonIgnore
     fun getSlotAdvancePreference(user: User): SlotAdvancePreference? =
-        slotAdvanceDuration?.let {
+        slotAdvanceDurationInMilliSeconds?.let {
             SlotAdvancePreference(
                 durationInMinutes = it.milliSecondsToMinutes(),
                 starAt = Helper.currentDateTime(),
@@ -57,4 +77,18 @@ data class PreferenceDto(
             getSlotDurationPreference(user),
             getAvailabilityPreference(user)
         )
+}
+
+
+fun String.getHour(): Int = this.substring(0, 2).toInt()
+fun String.getMin(): Int = this.substring(3, 5).toInt()
+
+fun String.getAVFormat(): Long = "${this.getHour()}${this.getMin()}".toLong()
+
+fun Long.getReverseAvFormat(): String = this.toString().let {
+    if (it.length  == 4) {
+        "${it.getHour()}:${it.substring(2, 4).toInt()}"
+    } else {
+        "0${it.substring(0, 1).toInt()}:${it.substring(1, 3).toInt()}"
+    }
 }
